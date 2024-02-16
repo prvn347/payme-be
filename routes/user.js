@@ -56,41 +56,42 @@ router.post("/signup", async function(req,res){
         token: token
     })
 })
-router.post("/signin",async function(req,res){
+router.post("/signin", async function(req, res) {
     const bodyPayload = req.body;
-    const parserPaylod = userSignIn.safeParse(bodyPayload)
-    if(!parserPaylod.success){
-        return res.status(411).json({
-            message: " Incorrect inputs"
-        })
+    const parserPayload = userSignIn.safeParse(bodyPayload);
+
+    if (!parserPayload.success) {
+        return res.status(400).json({
+            message: "Incorrect inputs"
+        });
     }
+
     const user = await User.findOne({
         username: req.body.username
     });
-    if (!user) {
-       
-            alert("User Not Found!")
-        
-    }
-    const isValidPassword = await bcrypt.compare(req.body.password, user.password);
 
+    if (!user) {
+        return res.status(401).json({
+            message: "User not found"
+        });
+    }
+
+    const isValidPassword = await bcrypt.compare(req.body.password, user.password);
 
     if (isValidPassword) {
         const token = jwt.sign({
             userId: user._id
         }, JWT_SECRET);
-  
-        res.json({
+
+        return res.json({
             token: token
-        })
-        return;
+        });
     }
 
-    
-    res.status(411).json({
-        message: "Error while logging in"
-    })
-})
+    res.status(401).json({
+        message: "Invalid username or password"
+    });
+});
 
 router.put("/",authMiddleware,async function(req,res){
     const { success } = updateBody.safeParse(req.body)
