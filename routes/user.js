@@ -1,4 +1,5 @@
 const express = require("express")
+const bcrypt = require("bcrypt");
 const { userValidate, userSignIn } = require("../zod")
 const { User,Account } = require("../db")
 const mongoose = require("mongoose")
@@ -33,10 +34,11 @@ router.post("/signup", async function(req,res){
             message: "Email already taken/Incorrect inputs"
         })
     }
-
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(req.body.password, salt);
     const user = await User.create({
         username: req.body.username,
-        password: req.body.password,
+        password: hash,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
     })
@@ -63,11 +65,17 @@ router.post("/signin",async function(req,res){
         })
     }
     const user = await User.findOne({
-        username: req.body.username,
-        password: req.body.password
+        username: req.body.username
     });
+    if (!user) {
+       
+            alert("User Not Found!")
+        
+    }
+    const isValidPassword = await bcrypt.compare(req.body.password, user.password);
 
-    if (user) {
+
+    if (isValidPassword) {
         const token = jwt.sign({
             userId: user._id
         }, JWT_SECRET);
