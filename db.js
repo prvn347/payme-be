@@ -2,7 +2,7 @@ const mongoose =  require("mongoose")
 const { object, Schema, number } = require("zod")
 const { dbURL } = require("./config")
 
-mongoose.connect("mongodb+srv://admin:bTv7yByzrdkmmpBy@cluster0.iykygz9.mongodb.net/")
+mongoose.connect(dbURL)
 
 const userSchema = new mongoose.Schema({
     username: {
